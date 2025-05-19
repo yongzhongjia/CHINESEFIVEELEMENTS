@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Five Elements Analysis</title>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
@@ -51,34 +51,27 @@
   <div id="resultText"></div>
 
   <script>
-    function generateFakeWuxing() {
-      // Simulate reasonable random values that sum up to 100
-      let values = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
-      let total = values.reduce((a, b) => a + b);
-      return values.map(v => Math.round((v / total) * 100));
-    }
-
-    function getSuggestions(data) {
-      let elements = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
-      let minIndex = data.indexOf(Math.min(...data));
-      let maxIndex = data.indexOf(Math.max(...data));
-      return `Your strongest element is <b>${elements[maxIndex]}</b>, and your weakest is <b>${elements[minIndex]}</b>.<br>
-        To balance, you may engage in activities or environments that strengthen <b>${elements[minIndex]}</b>.`;
-    }
-
-    document.getElementById('baziForm').addEventListener('submit', function (e) {
+    document.getElementById('baziForm').addEventListener('submit', async function (e) {
       e.preventDefault();
       const name = document.getElementById('name').value;
       const birthdate = document.getElementById('birthdate').value;
       const birthtime = document.getElementById('birthtime').value;
 
-      // For now, simulate data. Replace this with real analysis API later
-      const values = generateFakeWuxing();
-      const chart = echarts.init(document.getElementById('chart'));
-      const option = {
-        title: {
-          text: `${name}'s Five Elements`
+      const response = await fetch('/api/wuxing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
+        body: JSON.stringify({ name, birthdate, birthtime })
+      });
+
+      const result = await response.json();
+      const values = result.elements;
+      const suggestion = result.suggestion;
+
+      const chart = echarts.init(document.getElementById('chart'));
+      chart.setOption({
+        title: { text: `${name}'s Five Elements` },
         radar: {
           indicator: [
             { name: 'Wood', max: 100 },
@@ -92,13 +85,12 @@
           type: 'radar',
           data: [{
             value: values,
-            name: 'Elements Strength'
+            name: 'Element Strength'
           }]
         }]
-      };
-      chart.setOption(option);
+      });
 
-      document.getElementById('resultText').innerHTML = getSuggestions(values);
+      document.getElementById('resultText').innerHTML = suggestion;
     });
   </script>
 </body>

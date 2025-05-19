@@ -2,175 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Five Elements Bazi Analyzer</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Five Elements Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fdfaf5;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: linear-gradient(135deg, #283c86, #45a247);
-      color: white;
-      text-align: center;
-      padding: 3rem 1rem;
-    }
-    header h1 {
-      font-size: 2.5rem;
-      margin: 0;
-    }
-    header p {
-      font-size: 1.1rem;
-      margin-top: 1rem;
-    }
-    .container {
-      max-width: 720px;
-      margin: 2rem auto;
-      padding: 1.5rem;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .input-group {
-      margin-bottom: 1rem;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    input {
-      width: 100%;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      background-color: #45a247;
-      color: white;
-      border: none;
-      font-size: 1.2rem;
-      padding: 0.8rem 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-    button:hover {
-      background-color: #379435;
-    }
-    .result {
-      margin-top: 2rem;
-      background-color: #f5f5f5;
-      padding: 1rem;
-      border-radius: 10px;
-    }
-    .footer {
-      text-align: center;
+      font-family: sans-serif;
+      background: #f5f7fa;
       padding: 2rem;
-      color: #888;
-      font-size: 0.9rem;
+      text-align: center;
+    }
+    form {
+      background: white;
+      max-width: 500px;
+      margin: 0 auto 2rem;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+    #chart {
+      width: 100%;
+      max-width: 500px;
+      height: 400px;
+      margin: 0 auto;
+    }
+    #resultText {
+      margin-top: 1.5rem;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Five Elements Bazi Analysis</h1>
-    <p>Discover your elemental balance based on your Chinese birthdate. It's free and instant.</p>
-  </header>
+  <h1>Discover Your Five Elements Balance</h1>
+  <form id="baziForm">
+    <input type="text" id="name" placeholder="Your Name" required />
+    <input type="date" id="birthdate" required />
+    <input type="time" id="birthtime" required />
+    <button type="submit">Generate Analysis</button>
+  </form>
 
-  <div class="container">
-    <form id="form">
-      <div class="input-group">
-        <label for="name">Name (Optional)</label>
-        <input type="text" id="name" placeholder="e.g., John Doe" />
-      </div>
-      <div class="input-group">
-        <label for="birthdate">Date of Birth *</label>
-        <input type="date" id="birthdate" required />
-      </div>
-      <div class="input-group">
-        <label for="birthtime">Time of Birth (Optional)</label>
-        <input type="time" id="birthtime" />
-      </div>
-      <button type="submit">Generate My Five Elements</button>
-    </form>
-
-    <div class="result" id="result" style="display:none;">
-      <h3>🔍 Your Five Elements Analysis</h3>
-      <p><strong>Bazi:</strong> Jia Zi, Yi Chou, Bing Yin, Ding Mao</p>
-      <p><strong>Element Distribution:</strong> Metal: 2, Wood: 4, Water: 1, Fire: 3, Earth: 2</p>
-      <p><strong>Summary:</strong> You are lacking Water. This may affect your communication and adaptability. Consider wearing blue and staying near water to balance your elements.</p>
-      <canvas id="chart" width="300" height="300"></canvas>
-    </div>
-  </div>
-
-  <div class="footer">
-    © 2025 Five Elements Analyzer | All rights reserved.
-  </div>
+  <div id="chart"></div>
+  <div id="resultText"></div>
 
   <script>
-    const form = document.getElementById('form');
-    const result = document.getElementById('result');
+    function generateFakeWuxing() {
+      // Simulate reasonable random values that sum up to 100
+      let values = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+      let total = values.reduce((a, b) => a + b);
+      return values.map(v => Math.round((v / total) * 100));
+    }
 
-    form.addEventListener('submit', async (e) => {
+    function getSuggestions(data) {
+      let elements = ['Wood', 'Fire', 'Earth', 'Metal', 'Water'];
+      let minIndex = data.indexOf(Math.min(...data));
+      let maxIndex = data.indexOf(Math.max(...data));
+      return `Your strongest element is <b>${elements[maxIndex]}</b>, and your weakest is <b>${elements[minIndex]}</b>.<br>
+        To balance, you may engage in activities or environments that strengthen <b>${elements[minIndex]}</b>.`;
+    }
+
+    document.getElementById('baziForm').addEventListener('submit', function (e) {
       e.preventDefault();
+      const name = document.getElementById('name').value;
+      const birthdate = document.getElementById('birthdate').value;
+      const birthtime = document.getElementById('birthtime').value;
 
-      // Dummy data – replace with your API later
-      const data = {
-        bazi: ['Jia Zi', 'Yi Chou', 'Bing Yin', 'Ding Mao'],
-        distribution: {
-          Metal: 2,
-          Wood: 4,
-          Water: 1,
-          Fire: 3,
-          Earth: 2
+      // For now, simulate data. Replace this with real analysis API later
+      const values = generateFakeWuxing();
+      const chart = echarts.init(document.getElementById('chart'));
+      const option = {
+        title: {
+          text: `${name}'s Five Elements`
         },
-        summary: 'You are lacking Water. This may affect your communication and adaptability. Consider wearing blue and staying near water to balance your elements.'
-      };
-
-      // Show result
-      result.style.display = 'block';
-      result.querySelector('p:nth-child(2)').innerHTML = `<strong>Bazi:</strong> ${data.bazi.join(', ')}`;
-      result.querySelector('p:nth-child(3)').innerHTML = `<strong>Element Distribution:</strong> ${Object.entries(data.distribution).map(([k, v]) => \`\${k}: \${v}\`).join(', ')}`;
-      result.querySelector('p:nth-child(4)').innerHTML = `<strong>Summary:</strong> ${data.summary}`;
-
-      // Chart
-      const ctx = document.getElementById('chart').getContext('2d');
-      if (window.radarChart) window.radarChart.destroy();
-      window.radarChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-          labels: ['Metal', 'Wood', 'Water', 'Fire', 'Earth'],
-          datasets: [{
-            label: 'Your Five Elements',
-            data: [
-              data.distribution.Metal,
-              data.distribution.Wood,
-              data.distribution.Water,
-              data.distribution.Fire,
-              data.distribution.Earth
-            ],
-            backgroundColor: 'rgba(69,162,71,0.2)',
-            borderColor: '#45a247',
-            pointBackgroundColor: '#45a247'
+        radar: {
+          indicator: [
+            { name: 'Wood', max: 100 },
+            { name: 'Fire', max: 100 },
+            { name: 'Earth', max: 100 },
+            { name: 'Metal', max: 100 },
+            { name: 'Water', max: 100 }
+          ]
+        },
+        series: [{
+          type: 'radar',
+          data: [{
+            value: values,
+            name: 'Elements Strength'
           }]
-        },
-        options: {
-          scales: {
-            r: {
-              suggestedMin: 0,
-              suggestedMax: 5
-            }
-          }
-        }
-      });
+        }]
+      };
+      chart.setOption(option);
 
-      result.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('resultText').innerHTML = getSuggestions(values);
     });
   </script>
 </body>
